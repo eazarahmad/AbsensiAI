@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Environment Variables & Secrets
+.env
+serviceAccountKey.json
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+
+# Log files
+*.log

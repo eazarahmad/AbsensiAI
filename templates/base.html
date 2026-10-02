@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %} - Absensi-AI</title>
+  
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <a href="/" class="sidebar-brand">
+        <i class="bi bi-camera-reels-fill text-primary"></i>
+        <span>Absensi-AI</span>
+      </a>
+
+      <ul class="sidebar-menu">
+        {% if current_user.role == 'admin' %}
+          <li class="sidebar-item">
+            <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link {% if request.path == url_for('admin_dashboard') %}active{% endif %}">
+              <i class="bi bi-grid-fill"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="{{ url_for('admin_siswa') }}" class="sidebar-link {% if request.path == url_for('admin_siswa') %}active{% endif %}">
+              <i class="bi bi-people-fill"></i>
+              <span>Data Siswa</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="{{ url_for('halaman_absensi') }}" class="sidebar-link {% if request.path == url_for('halaman_absensi') %}active{% endif %}">
+              <i class="bi bi-camera-fill"></i>
+              <span>Kamera Absensi</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="{{ url_for('admin_laporan') }}" class="sidebar-link {% if request.path == url_for('admin_laporan') %}active{% endif %}">
+              <i class="bi bi-file-earmark-bar-graph-fill"></i>
+              <span>Laporan Absensi</span>
+            </a>
+          </li>
+        {% elif current_user.role == 'siswa' %}
+          <li class="sidebar-item">
+            <a href="{{ url_for('siswa_dashboard') }}" class="sidebar-link {% if request.path == url_for('siswa_dashboard') %}active{% endif %}">
+              <i class="bi bi-person-badge-fill"></i>
+              <span>Profil & Riwayat</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="{{ url_for('halaman_absensi') }}" class="sidebar-link {% if request.path == url_for('halaman_absensi') %}active{% endif %}">
+              <i class="bi bi-camera-fill"></i>
+              <span>Absen Wajah Sekarang</span>
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 36px; height: 36px; font-weight: 600;">
+              {{ current_user.nama[0] | upper if current_user.nama else 'U' }}
+            </div>
+            <div class="overflow-hidden" style="max-width: 120px;">
+              <div class="fw-semibold text-truncate small">{{ current_user.nama }}</div>
+              <span class="badge bg-light text-secondary border text-uppercase" style="font-size: 0.65rem;">{{ current_user.role }}</span>
+            </div>
+          </div>
+          <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm p-1 rounded" title="Logout">
+            <i class="bi bi-box-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button id="sidebar-toggle" class="btn btn-light d-lg-none border p-2">
+            <i class="bi bi-list"></i>
+          </button>
+          <h5 class="mb-0 fw-bold text-dark">{% block page_heading %}Sistem Absensi AI{% endblock %}</h5>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Firebase Status Badge -->
+          {% if firebase_active %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-md-inline-flex align-items-center gap-1">
+              <i class="bi bi-cloud-check-fill"></i> Firebase RTDB Terhubung
+            </span>
+          {% else %}
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle d-none d-md-inline-flex align-items-center gap-1" title="Menggunakan Local RTDB sync">
+              <i class="bi bi-database-check"></i> Local RTDB Active
+            </span>
+          {% endif %}
+
+          <!-- AI Model Engine Badge -->
+          <span class="badge bg-info-subtle text-info border border-info-subtle d-none d-sm-inline-flex align-items-center gap-1">
+            <i class="bi bi-cpu"></i> {{ face_rec_mode }}
+          </span>
+
+          <span class="text-muted small ms-2 d-none d-md-inline">{{ now.strftime('%d %b %Y') }}</span>
+        </div>
+      </header>
+
+      <!-- Content Body -->
+      <section class="content-body">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi {% if category == 'success' %}bi-check-circle-fill{% elif category == 'danger' %}bi-exclamation-octagon-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Main Script -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

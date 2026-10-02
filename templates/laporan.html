@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Laporan Absensi{% endblock %}
+{% block page_heading %}Laporan & Rekapitulasi Presensi{% endblock %}
+
+{% block content %}
+<!-- Filter & Search Toolbar -->
+<div class="card border-0 shadow-sm rounded-3 mb-4 p-3">
+  <form method="GET" action="{{ url_for('admin_laporan') }}" class="row g-2 align-items-end">
+    <div class="col-12 col-md-3">
+      <label class="form-label fw-semibold small text-muted">Cari Nama Siswa</label>
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" id="search-input" name="nama" class="form-control border-start-0" placeholder="Ketik nama..." value="{{ filter_nama }}">
+      </div>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label class="form-label fw-semibold small text-muted">Tanggal</label>
+      <input type="date" name="tanggal" class="form-control" value="{{ filter_tanggal }}">
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label class="form-label fw-semibold small text-muted">Kelas</label>
+      <select name="kelas" class="form-select">
+        <option value="">Semua Kelas</option>
+        {% for k in daftar_kelas %}
+          <option value="{{ k }}" {% if filter_kelas == k|lower %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label class="form-label fw-semibold small text-muted">Status</label>
+      <select name="status" class="form-select">
+        <option value="">Semua Status</option>
+        <option value="hadir" {% if filter_status == 'hadir' %}selected{% endif %}>Hadir</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-md-3 d-flex gap-2">
+      <button type="submit" class="btn btn-primary flex-grow-1">
+        <i class="bi bi-funnel-fill me-1"></i> Filter
+      </button>
+      <button type="button" id="btn-reset-filter" class="btn btn-light border" title="Reset Filter">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Laporan Table Card -->
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+      <h6 class="fw-bold text-dark mb-0">
+        <i class="bi bi-table me-2 text-primary"></i>Data Presensi Siswa ({{ laporan|length }} Data)
+      </h6>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('export_excel', tanggal=filter_tanggal, nama=filter_nama, kelas=filter_kelas, status=filter_status) }}" class="btn btn-success btn-sm fw-medium shadow-sm">
+        <i class="bi bi-file-earmark-excel-fill me-1"></i> Export Excel
+      </a>
+      <a href="{{ url_for('export_pdf', tanggal=filter_tanggal, nama=filter_nama, kelas=filter_kelas, status=filter_status) }}" class="btn btn-danger btn-sm fw-medium shadow-sm">
+        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Export PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table id="report-table" class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 50px;">No</th>
+          <th>ID Siswa</th>
+          <th>Nama Siswa</th>
+          <th>Kelas</th>
+          <th>Tanggal</th>
+          <th>Jam Masuk</th>
+          <th>Status</th>
+          <th>Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if laporan %}
+          {% for row in laporan %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><code>{{ row.id_siswa }}</code></td>
+              <td class="fw-bold text-dark">{{ row.nama }}</td>
+              <td><span class="badge bg-light text-dark border">{{ row.kelas }}</span></td>
+              <td>{{ row.tanggal }}</td>
+              <td><i class="bi bi-clock me-1 text-muted"></i>{{ row.waktu }}</td>
+              <td><span class="badge bg-success">Hadir</span></td>
+              <td>
+                <span class="badge bg-info-subtle text-info border border-info-subtle">
+                  {{ row.confidence }}%
+                </span>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-file-earmark-x fs-1 d-block text-secondary mb-2"></i>
+              Tidak ada data presensi yang sesuai dengan kriteria filter pencarian.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}

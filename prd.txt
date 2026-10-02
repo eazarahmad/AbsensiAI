@@ -1,0 +1,365 @@
+Buatkan saya aplikasi web Absensi berbasis Artificial Intelligence dengan fitur Face Recognition menggunakan Python sebagai backend dan Firebase Realtime Database sebagai database realtime.
+
+Nama aplikasi:
+Absensi-AI
+
+Tujuan aplikasi:
+Membuat sistem absensi siswa menggunakan kamera dan teknologi deteksi wajah AI sehingga siswa dapat melakukan absensi otomatis berdasarkan pengenalan wajah.
+
+====================================================
+TEKNOLOGI YANG DIGUNAKAN
+====================================================
+
+Backend:
+- Python
+- Flask Framework
+- OpenCV untuk kamera dan face detection
+- Face Recognition AI menggunakan library:
+  - face_recognition
+  - dlib
+  - OpenCV
+- REST API Flask
+
+Frontend:
+- HTML5
+- CSS3
+- Bootstrap 5
+- JavaScript
+- Responsive Web Design
+
+Database:
+Gunakan Firebase Realtime Database.
+
+Firebase Configuration:
+
+Project Name:
+Absensi-AI
+
+Project ID:
+absensi-ai-a6fe9
+
+Project Number:
+425603956607
+
+Firebase Web Config:
+
+const firebaseConfig = {
+ apiKey: "AIzaSyBzGaXWO0XYrs96wMPHChzAvEWywFuRRMk",
+ authDomain: "absensi-ai-a6fe9.firebaseapp.com",
+ projectId: "absensi-ai-a6fe9",
+ storageBucket: "absensi-ai-a6fe9.firebasestorage.app",
+ messagingSenderId: "425603956607",
+ appId: "1:425603956607:web:8797531e31e2270db6244a",
+ measurementId: "G-RHLT31RWQZ"
+};
+
+Gunakan Firebase Admin SDK Python untuk backend.
+
+====================================================
+SISTEM ROLE USER
+====================================================
+
+Buat dua role pengguna:
+
+1. ADMIN
+
+Fitur:
+- Login admin
+- Dashboard admin
+- Mengelola data siswa
+- Menambah siswa baru
+- Edit data siswa
+- Hapus siswa
+- Upload foto wajah siswa untuk training AI
+- Melihat semua data absensi
+- Filter laporan berdasarkan:
+  - tanggal
+  - nama siswa
+  - kelas
+  - status kehadiran
+- Export laporan ke Excel/PDF
+
+
+2. SISWA
+
+Fitur:
+- Login siswa
+- Melakukan absensi melalui kamera
+- Sistem membaca wajah siswa
+- Jika wajah cocok:
+    - otomatis mencatat kehadiran
+    - menyimpan waktu absensi
+    - menyimpan tanggal
+    - status hadir
+
+Siswa dapat melihat:
+- Riwayat absensi pribadi
+- Jumlah hadir
+- Jumlah tidak hadir
+
+
+====================================================
+FITUR UTAMA APLIKASI
+====================================================
+
+FITUR 1:
+ABSENSI WAJAH AI
+
+Alur:
+
+1. Siswa membuka halaman absensi.
+
+2. Browser mengaktifkan kamera.
+
+3. Kamera mengambil frame wajah.
+
+4. Sistem melakukan:
+   - face detection
+   - face encoding
+   - face matching dengan database wajah siswa
+
+5. Jika wajah dikenali:
+
+Simpan data:
+
+{
+ id_absensi,
+ id_siswa,
+ nama_siswa,
+ kelas,
+ tanggal,
+ waktu,
+ status:"Hadir",
+ confidence_score
+}
+
+ke Firebase Realtime Database.
+
+
+Jika wajah tidak dikenali:
+Tampilkan pesan:
+
+"Wajah tidak terdaftar"
+
+
+Tambahkan:
+- confidence percentage
+- indikator kamera aktif
+- loading ketika proses recognition
+
+
+====================================================
+
+FITUR 2:
+LAPORAN ABSENSI
+
+Admin dapat melihat:
+
+Tabel:
+
+No
+ID Siswa
+Nama
+Kelas
+Tanggal
+Jam Masuk
+Status
+Confidence
+
+
+Tambahkan fitur:
+
+- Search siswa
+- Filter tanggal
+- Filter kelas
+- Export Excel
+- Export PDF
+
+
+====================================================
+DESAIN DATABASE FIREBASE
+====================================================
+
+
+Gunakan struktur:
+
+
+users
+
+{
+ user_id:{
+    nama:"",
+    email:"",
+    password:"",
+    role:"admin/siswa"
+ }
+}
+
+
+
+siswa
+
+{
+ id_siswa:{
+    nama:"",
+    nis:"",
+    kelas:"",
+    alamat:"",
+    foto_wajah:"",
+    face_encoding:[]
+ }
+}
+
+
+
+absensi
+
+{
+ id_absensi:{
+    id_siswa:"",
+    nama:"",
+    kelas:"",
+    tanggal:"",
+    waktu:"",
+    status:"Hadir",
+    confidence:0
+ }
+}
+
+
+
+admin
+
+{
+ admin_id:{
+    nama:"",
+    email:"",
+    role:"admin"
+ }
+}
+
+
+
+====================================================
+FACE RECOGNITION SYSTEM
+====================================================
+
+Buat modul:
+
+face_recognition_engine.py
+
+
+Fungsi:
+
+- register_face()
+  untuk menyimpan wajah siswa
+
+- encode_face()
+  untuk membuat face embedding
+
+- recognize_face()
+  untuk mencocokan wajah kamera dengan database
+
+
+Gunakan:
+- OpenCV Camera
+- Haar Cascade / CNN detector
+- face_recognition library
+
+
+====================================================
+STRUKTUR PROJECT
+====================================================
+
+
+Buat struktur:
+
+
+Absensi-AI/
+
+
+ app.py
+ firebase_config.py
+ requirements.txt
+
+ static/
+    css/
+    js/
+    images/
+
+ templates/
+    login.html
+    dashboard_admin.html
+    dashboard_siswa.html
+    absensi.html
+    laporan.html
+
+ ai/
+    face_recognition_engine.py
+    train_face.py
+
+ database/
+
+ uploads/
+     faces/
+
+
+====================================================
+KEAMANAN
+====================================================
+
+Tambahkan:
+
+- Firebase Authentication
+- Password hashing
+- Session login Flask
+- Role based access control
+- Validasi input
+- Pencegahan absensi ganda dalam satu hari
+
+
+====================================================
+TAMPILAN UI
+====================================================
+
+Gunakan dashboard modern:
+
+Admin:
+- Sidebar menu
+- Card jumlah siswa
+- Card absensi hari ini
+- Grafik kehadiran
+
+
+Siswa:
+- Kamera besar
+- Tombol mulai absensi
+- Status recognition
+- Riwayat absensi
+
+
+Gunakan warna:
+- Biru profesional
+- Putih
+- Abu modern
+
+
+====================================================
+OUTPUT YANG SAYA INGINKAN
+====================================================
+
+Buatkan:
+
+1. Source code lengkap backend Flask
+2. Source code frontend HTML CSS JS
+3. Firebase integration
+4. Database schema
+5. requirements.txt
+6. Cara instalasi
+7. Cara menjalankan aplikasi
+8. Cara training wajah siswa
+9. Cara deploy
+
+
+Pastikan kode dapat langsung dijalankan.
+Gunakan kode yang rapi, modular, dan mudah dikembangkan.

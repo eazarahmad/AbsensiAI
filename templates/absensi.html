@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Kamera Absensi AI{% endblock %}
+{% block page_heading %}Presensi Pintar Pengenalan Wajah AI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-camera-video text-primary me-2"></i>Pindai Wajah Anda
+          </h5>
+          <span class="text-muted small">Posisikan wajah Anda tepat di depan kamera secara tegak.</span>
+        </div>
+        <div id="camera-status" class="camera-indicator d-none">
+          <span class="pulse-dot"></span> Kamera Aktif
+        </div>
+      </div>
+
+      <!-- Live Camera Stream Box -->
+      <div class="camera-container mb-3">
+        <video id="camera-stream" autoplay playsinline muted></video>
+        <canvas id="overlay-canvas"></canvas>
+        <div id="scan-line" class="scan-line"></div>
+      </div>
+
+      <!-- Controls & Loading State -->
+      <div class="d-flex flex-wrap align-items-center justify-content-center gap-2 mb-2">
+        <button id="btn-start-camera" class="btn btn-outline-primary fw-semibold px-4 d-none">
+          <i class="bi bi-camera-video me-1"></i> Hidupkan Kamera
+        </button>
+        <button id="btn-stop-camera" class="btn btn-outline-secondary fw-semibold px-4">
+          <i class="bi bi-camera-video-off me-1"></i> Matikan Kamera
+        </button>
+        <button id="btn-scan-face" class="btn btn-primary fw-semibold px-4 shadow-sm">
+          <i class="bi bi-qr-code-scan me-1"></i> Pindai Sekarang
+        </button>
+      </div>
+
+      <!-- Loading spinner -->
+      <div id="recognition-loading" class="d-none my-2 text-primary">
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        <span class="small fw-semibold">Memproses pencocokan wajah dengan AI...</span>
+      </div>
+
+      <!-- Realtime Status Alert Card -->
+      <div id="status-result-card" class="card border-secondary bg-light shadow-sm mt-3">
+        <div class="card-body py-3">
+          <i class="bi bi-person-bounding-box fs-1 text-primary"></i>
+          <h6 class="mt-2 mb-1 fw-bold text-dark">Mendeteksi Wajah...</h6>
+          <p class="text-muted small mb-0">Pastikan pencahayaan cukup dan wajah terlihat jelas tanpa penutup masker.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+{% endblock %}

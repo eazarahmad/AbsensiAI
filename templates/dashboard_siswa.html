@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Siswa{% endblock %}
+{% block page_heading %}Portal Siswa{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <!-- Profile & Attendance Status Card -->
+  <div class="col-12 col-lg-5">
+    <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100">
+      <div class="mb-3">
+        {% if siswa.foto_wajah %}
+          <img src="{{ siswa.foto_wajah }}" alt="{{ siswa.nama }}" class="rounded-circle border border-3 border-primary shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
+        {% else %}
+          <div class="rounded-circle bg-light border border-3 border-primary mx-auto d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+            <i class="bi bi-person-fill text-primary fs-1"></i>
+          </div>
+        {% endif %}
+      </div>
+      <h4 class="fw-bold text-dark mb-1">{{ siswa.nama }}</h4>
+      <p class="text-muted mb-2">NIS: <code>{{ siswa.nis }}</code> | Kelas: <strong>{{ siswa.kelas }}</strong></p>
+
+      <!-- Today's Attendance Status Badge -->
+      <div class="mt-2 mb-4">
+        {% if sudah_hadir_hari_ini %}
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6 rounded-pill">
+            <i class="bi bi-check-circle-fill me-1"></i> Sudah Hadir Hari Ini ({{ today_date }})
+          </span>
+        {% else %}
+          <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 fs-6 rounded-pill">
+            <i class="bi bi-clock-history me-1"></i> Belum Absen Hari Ini ({{ today_date }})
+          </span>
+        {% endif %}
+      </div>
+
+      <div class="d-grid mt-auto">
+        <a href="{{ url_for('halaman_absensi') }}" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+          <i class="bi bi-camera me-2"></i> Buka Kamera Absensi Wajah
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Stats & Summary -->
+  <div class="col-12 col-lg-7">
+    <div class="row g-3 mb-4">
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-semibold text-uppercase">Total Kehadiran</div>
+              <div class="fs-2 fw-bold text-success mt-1">{{ jumlah_hadir }}</div>
+            </div>
+            <div class="stat-icon-box icon-green">
+              <i class="bi bi-calendar2-check-fill"></i>
+            </div>
+          </div>
+          <span class="small text-muted mt-2 d-block">Presensi berhasil terekam</span>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-semibold text-uppercase">Status Wajah AI</div>
+              <div class="fs-5 fw-bold text-primary mt-1">
+                {% if siswa.face_encoding and siswa.face_encoding|length > 0 %}
+                  Terdaftar
+                {% else %}
+                  Belum Ada
+                {% endif %}
+              </div>
+            </div>
+            <div class="stat-icon-box icon-blue">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+          </div>
+          <span class="small text-muted mt-2 d-block">Biometrik AI wajah aktif</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Attendance History -->
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header bg-white border-bottom py-3">
+        <h6 class="fw-bold text-dark mb-0">
+          <i class="bi bi-journal-text me-2 text-primary"></i>Riwayat Kehadiran Pribadi
+        </h6>
+      </div>
+      <div class="table-responsive" style="max-height: 360px;">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light sticky-top">
+            <tr>
+              <th>Tanggal</th>
+              <th>Waktu Masuk</th>
+              <th>Status</th>
+              <th>Akurasi AI</th>
+            </tr>
+          </thead>
+          <tbody id="personal-history-tbody">
+            {% if riwayat %}
+              {% for item in riwayat %}
+                <tr>
+                  <td class="fw-medium text-dark">{{ item.tanggal }}</td>
+                  <td><i class="bi bi-clock me-1 text-muted"></i>{{ item.waktu }}</td>
+                  <td><span class="badge bg-success">Hadir</span></td>
+                  <td>
+                    <span class="badge bg-light text-secondary border">
+                      {{ item.confidence or 95 }}%
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center py-4 text-muted">
+                  Belum ada riwayat kehadiran tercatat.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

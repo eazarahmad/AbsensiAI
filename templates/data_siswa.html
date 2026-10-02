@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Kelola Data Siswa{% endblock %}
+{% block page_heading %}Manajemen Data Siswa{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h5 class="fw-bold text-dark mb-1">Daftar Siswa & Profil AI</h5>
+    <p class="text-muted small mb-0">Kelola informasi siswa, nis, kelas, dan foto wajah untuk pengenalan AI.</p>
+  </div>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahSiswa">
+    <i class="bi bi-person-plus-fill me-1"></i> Tambah Siswa Baru
+  </button>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Foto Wajah</th>
+          <th>NIS</th>
+          <th>Nama Siswa</th>
+          <th>Kelas</th>
+          <th>Alamat</th>
+          <th>Status Model AI</th>
+          <th class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if siswa_dict %}
+          {% for sid, s in siswa_dict.items() %}
+            <tr>
+              <td>
+                {% if s.foto_wajah %}
+                  <img src="{{ s.foto_wajah }}" alt="{{ s.nama }}" class="rounded-circle border" style="width: 44px; height: 44px; object-fit: cover;">
+                {% else %}
+                  <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center border" style="width: 44px; height: 44px;">
+                    <i class="bi bi-person fs-5"></i>
+                  </div>
+                {% endif %}
+              </td>
+              <td><code>{{ s.nis }}</code></td>
+              <td class="fw-bold text-dark">{{ s.nama }}</td>
+              <td><span class="badge bg-light text-dark border">{{ s.kelas }}</span></td>
+              <td class="text-muted small">{{ s.alamat or '-' }}</td>
+              <td>
+                {% if s.face_encoding and s.face_encoding|length > 0 %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">
+                    <i class="bi bi-check-circle-fill me-1"></i> AI Terlatih
+                  </span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Belum Dilatih
+                  </span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#modalEdit{{ loop.index }}">
+                  <i class="bi bi-pencil-square"></i> Edit
+                </button>
+                <form action="{{ url_for('admin_siswa_hapus', id_siswa=sid) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data siswa {{ s.nama }}?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+
+            <!-- Modal Edit Siswa -->
+            <div class="modal fade" id="modalEdit{{ loop.index }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form action="{{ url_for('admin_siswa_edit', id_siswa=sid) }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-header">
+                      <h5 class="modal-title fw-bold">Edit Data Siswa</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold small">Nama Lengkap</label>
+                        <input type="text" name="nama" class="form-control" value="{{ s.nama }}" required>
+                      </div>
+                      <div class="row g-2 mb-3">
+                        <div class="col-6">
+                          <label class="form-label fw-semibold small">NIS</label>
+                          <input type="text" name="nis" class="form-control" value="{{ s.nis }}" required>
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label fw-semibold small">Kelas</label>
+                          <input type="text" name="kelas" class="form-control" value="{{ s.kelas }}" required>
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold small">Alamat</label>
+                        <textarea name="alamat" class="form-control" rows="2">{{ s.alamat }}</textarea>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold small">Ganti Foto Wajah (Opsional)</label>
+                        <input type="file" name="foto_wajah" class="form-control" accept="image/*">
+                        <small class="text-muted">Upload foto wajah jelas menghadap depan untuk kalibrasi AI.</small>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
+                      <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">
+              Belum ada data siswa tersimpan. Silakan klik tombol "Tambah Siswa Baru".
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Tambah Siswa Baru -->
+<div class="modal fade" id="modalTambahSiswa" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ url_for('admin_siswa_tambah') }}" method="POST" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Tambah Siswa Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Nama Lengkap Siswa *</label>
+            <input type="text" name="nama" class="form-control" placeholder="Contoh: Budi Santoso" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold small">NIS *</label>
+              <input type="text" name="nis" class="form-control" placeholder="Contoh: 10245" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold small">Kelas *</label>
+              <input type="text" name="kelas" class="form-control" placeholder="Contoh: XI-RPL-2" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Email (Untuk Login Siswa)</label>
+            <input type="email" name="email" class="form-control" placeholder="Contoh: budi@siswa.ai (Opsional)">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Alamat</label>
+            <textarea name="alamat" class="form-control" rows="2" placeholder="Alamat rumah siswa"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Foto Wajah Siswa (Untuk Training AI) *</label>
+            <input type="file" name="foto_wajah" class="form-control" accept="image/*" required>
+            <div class="form-text text-primary small">
+              <i class="bi bi-info-circle me-1"></i> Foto wajah akan otomatis diekstrak menjadi embedding AI.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Simpan & Training AI
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
